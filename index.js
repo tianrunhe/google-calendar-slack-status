@@ -15,6 +15,50 @@ app.use(bodyParser.json());
 
 const router = express.Router();
 
+const default_setting = {
+  'emoji': nodeEmoji.unemojify('🗓'),
+  'dnd': true,
+  'away': false
+}
+
+const setting_map = {
+  'Focus Time': {
+    'emoji': nodeEmoji.unemojify('💻'),
+    'dnd': true,
+    'away': false
+  },
+  'Lunch': {
+    'emoji': nodeEmoji.unemojify('🍽'),
+    'dnd': false,
+    'away': true
+  },
+  'Exercise': {
+    'emoji': nodeEmoji.unemojify('💪'),
+    'dnd': false,
+    'away': true
+  },
+  'Take a walk': {
+    'emoji': nodeEmoji.unemojify('☀️'),
+    'dnd': false,
+    'away': true
+  },
+  'Take a nap': {
+    'emoji': nodeEmoji.unemojify('💤'),
+    'dnd': false,
+    'away': true
+  },
+  'Travel': {
+    'emoji': nodeEmoji.unemojify('🚌'),
+    'dnd': false,
+    'away': true
+  },
+  'Personal Commitment': {
+    'emoji': nodeEmoji.unemojify('🏠'),
+    'dnd': false,
+    'away': true
+  }
+}
+
 app.post('/', (req, res, next) => {
   // check for secret token
   if (!req.body.token || req.body.token !== process.env.SECRET_TOKEN) {
@@ -27,41 +71,45 @@ app.post('/', (req, res, next) => {
   console.log(req.body);
   // grab status and emojis and clean it up
   let status = req.body.title;
-  let statusEmoji = nodeEmoji.unemojify('🗓');
-  const statusHasEmoji = emojiRegex().exec(status);
-  if (statusHasEmoji) {
-    if (statusHasEmoji.length > 1) {
-      console.log(`Found more than 1 emojis: ${statusHasEmoji}; Ignoring the first one: ${statusHasEmoji[0]}`);
-      statusEmoji = nodeEmoji.unemojify(statusHasEmoji[1]);
-    } else {
-      statusEmoji = nodeEmoji.unemojify(statusHasEmoji[0]);
-    }
-    console.log(`CUSTOM EMOJI! ${statusEmoji}`);
-    status = nodeEmoji.strip(status);
-  }
-  // additional tokens
-  const dndToken = '[DND]';
-  const awayToken = 'Travel';
+
   // parse event start/stop time
   const dateFormat = 'MMM D, YYYY [at] hh:mmA';
   const start = moment(req.body.start, dateFormat);
-  const end = moment(req.body.end, dateFormat);
-  // check for DND
-  if (status.includes(dndToken)) {
+  const end = moment(req.body.end, dateFormat)
+
+  let matched = false
+  for (title_keyword in setting_map) {
+    if (!matched && status.includes(title_keyword)) {
+      matched = true
+      setting = setting_map[title_keyword]
+      if (setting['dnd']) {
+        slack.dnd.setSnooze({
+          token,
+          num_minutes: end.diff(start, 'minutes')
+        }); 
+      }
+ 
+      if (setting['away']) {
+        slack.users.setPresence({
+          token,
+          presence: 'away'
+        });
+      }
+
+      statusEmoji = setting['emoji']
+      status = title_keyword
+    }
+  }
+
+  if (!matched) {
+    setting = default_setting
     slack.dnd.setSnooze({
       token,
       num_minutes: end.diff(start, 'minutes')
-    });
-    status = status.replace(dndToken, '').trim();
+    }); 
+    statusEmoji = setting['emoji']
   }
-  // check for AWAY
-  slack.users.setPresence({
-    token,
-    presence: status.includes(awayToken) ? 'away' : 'auto'
-  });
-  if (status.includes(awayToken)) {
-    status = status.replace(awayToken, '').trim();
-  }
+
   // set status
   status = `${status} from ${start.format('h:mm')} to ${end.format('h:mm a')} ${process.env.TIME_ZONE}`;
   let profile = JSON.stringify({
