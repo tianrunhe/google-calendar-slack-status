@@ -118,8 +118,9 @@ app.post('/', (req, res, next) => {
     "status_expiration": end.unix()
   });
   console.log(profile);
-  slack.users.profile.set({ token, profile });
+  response = slack.users.profile.set({ token, profile });
   console.log(`Status set as "${status}" and will expire at ${end.format('h:mm a')}`);
+  console.log(`Slack server response is: ${response}`)
   res.status(200);
   res.send('🤘');
 });
