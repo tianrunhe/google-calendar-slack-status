@@ -30,7 +30,12 @@ app.post('/', (req, res, next) => {
   let statusEmoji = nodeEmoji.unemojify('🗓');
   const statusHasEmoji = emojiRegex().exec(status);
   if (statusHasEmoji) {
-    statusEmoji = nodeEmoji.unemojify(statusHasEmoji[0]);
+    if (len(statusHasEmoji) > 1) {
+      console.log(`Found more than 1 emojis: ${statusHasEmoji}; Ignoring the first one: ${statusHasEmoji[0]}`);
+      statusEmoji = nodeEmoji.unemojify(statusHasEmoji[1]);
+    } else {
+      statusEmoji = nodeEmoji.unemojify(statusHasEmoji[0]);
+    }
     console.log(`CUSTOM EMOJI! ${statusEmoji}`);
     status = nodeEmoji.strip(status);
   }
