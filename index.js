@@ -59,6 +59,15 @@ const setting_map = {
   }
 }
 
+async function setStatus(token, profile, status, end) {
+  await slack.users.profile
+    .set({ token, profile })
+    .then(console.log(`Status set as "${status}" and will expire at ${end.format('h:mm a')}`))
+    .catch(function handleErrors(e) {
+      console.error(e);
+    });
+}
+
 app.post('/', (req, res, next) => {
   // check for secret token
   if (!req.body.token || req.body.token !== process.env.SECRET_TOKEN) {
@@ -118,9 +127,7 @@ app.post('/', (req, res, next) => {
     "status_expiration": end.unix()
   });
   console.log(profile);
-  response = slack.users.profile.set({ token, profile });
-  console.log(`Status set as "${status}" and will expire at ${end.format('h:mm a')}`);
-  console.log(`Slack server response is: ${response}`)
+  setStatus(token, profile, status, end)
   res.status(200);
   res.send('🤘');
 });
