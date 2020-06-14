@@ -36,7 +36,7 @@ app.post('/', (req, res, next) => {
   }
   // additional tokens
   const dndToken = '[DND]';
-  const awayToken = '[AWAY]';
+  const awayToken = 'Travel';
   // parse event start/stop time
   const dateFormat = 'MMM D, YYYY [at] hh:mmA';
   const start = moment(req.body.start, dateFormat);
