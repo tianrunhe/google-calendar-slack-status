@@ -107,6 +107,8 @@ app.post('/', (req, res, next) => {
           token,
           num_minutes: end.diff(start, 'minutes')
         }); 
+      } else {
+        slack.dnd.endDnd()
       }
  
       if (setting['away']) {
@@ -114,6 +116,11 @@ app.post('/', (req, res, next) => {
           token,
           presence: 'away'
         });
+      } else {
+        slack.users.setPresence({
+          token,
+          presence: 'auto'
+        }); 
       }
 
       statusEmoji = setting['emoji']
