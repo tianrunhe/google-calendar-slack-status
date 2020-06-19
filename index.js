@@ -4,7 +4,7 @@ const logger = require('morgan');
 const emojiRegex = require('emoji-regex');
 const nodeEmoji = require('node-emoji');
 const slack = require('slack');
-const moment = require('moment');
+const moment = require('moment-timezone');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -62,7 +62,7 @@ const setting_map = {
 async function setStatus(token, profile, status, end) {
   await slack.users.profile
     .set({ token, profile })
-    .then(console.log(`Status set as "${status}" and will expire at ${end.format('h:mm a')}`))
+    .then(console.log(`Status set as "${status}" and will expire at ${end.format('HH:mm')} UTC`))
     .catch(function handleErrors(e) {
       console.error(e);
     });
@@ -83,8 +83,8 @@ app.post('/', (req, res, next) => {
 
   // parse event start/stop time
   const dateFormat = 'MMM D, YYYY [at] hh:mmA';
-  const start = moment(req.body.start, dateFormat);
-  const end = moment(req.body.end, dateFormat)
+  const start = moment.tz(req.body.start, dateFormat, `${process.env.TIME_ZONE}`);
+  const end = moment.tz(req.body.end, dateFormat, `${process.env.TIME_ZONE}`);
 
   let matched = false
   for (title_keyword in setting_map) {
@@ -119,13 +119,12 @@ app.post('/', (req, res, next) => {
     statusEmoji = setting['emoji']
   }
 
-  console.log("end = " + end + "; end.unix() = " + end.unix())
   // set status
-  status = `${status} from ${start.format('h:mm')} to ${end.format('h:mm a')} ${process.env.TIME_ZONE}`;
+  status = `${status} till ${end.format('HH:mm')} ${process.env.TIME_ZONE}`;
   let profile = JSON.stringify({
     "status_text": status,
     "status_emoji": statusEmoji,
-    "status_expiration": end.unix()
+    "status_expiration": end.utc().unix()
   });
   console.log(profile);
   setStatus(token, profile, status, end)
