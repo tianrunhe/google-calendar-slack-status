@@ -119,6 +119,7 @@ app.post('/', (req, res, next) => {
     statusEmoji = setting['emoji']
   }
 
+  console.log("end = " + end + "; end.unix() = " + end.unix())
   // set status
   status = `${status} from ${start.format('h:mm')} to ${end.format('h:mm a')} ${process.env.TIME_ZONE}`;
   let profile = JSON.stringify({
