@@ -84,6 +84,7 @@ app.post('/', (req, res, next) => {
   // parse event start/stop time
   const dateFormat = 'MMM D, YYYY [at] hh:mmA';
   const start = moment.tz(req.body.start, dateFormat, `${process.env.TIME_ZONE}`);
+  const end = moment.tz(req.body.end, dateFormat, `${process.env.TIME_ZONE}`);
   if (end.hour() < 9) {
     console.log(`Event '${status}' ends at ${end}, which is before 09:00 ${process.env.TIME_ZONE}, ignoring...`)
     res.status(200)
@@ -95,7 +96,6 @@ app.post('/', (req, res, next) => {
     res.send('Too late!')
     return
   }
-  const end = moment.tz(req.body.end, dateFormat, `${process.env.TIME_ZONE}`);
 
   let matched = false
   for (title_keyword in setting_map) {
