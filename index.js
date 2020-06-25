@@ -37,8 +37,8 @@ const setting_map = {
     'dnd': false,
     'away': true
   },
-  'Take a walk': {
-    'emoji': nodeEmoji.unemojify('☀️'),
+  'Coffee Time': {
+    'emoji': nodeEmoji.unemojify('☕️'),
     'dnd': false,
     'away': true
   },
