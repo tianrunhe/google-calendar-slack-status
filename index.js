@@ -91,7 +91,7 @@ app.post('/', (req, res, next) => {
     res.status(200)
     res.send('Too early(!')
     return
-  } else if (start.hour() > 17) {
+  } else if (start.hour() >= 17) {
     console.log(`Event '${status}' starts at ${start}, which is after 17:00 ${process.env.TIME_ZONE}, ignoring...`)
     res.status(200)
     res.send('Too late!')
