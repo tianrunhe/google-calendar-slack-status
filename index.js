@@ -48,7 +48,8 @@ const setting_map = {
     'away': true
   },
   'Travel': {
-    'emoji': nodeEmoji.unemojify('🚌'),
+    'rename': 'Commute',
+    'emoji': nodeEmoji.unemojify('🚘'),
     'dnd': false,
     'away': true
   },
@@ -124,7 +125,7 @@ app.post('/', (req, res, next) => {
       }
 
       statusEmoji = setting['emoji']
-      status = title_keyword
+      status = setting['rename'] ? setting['rename'] : title_keyword
     }
   }
 
