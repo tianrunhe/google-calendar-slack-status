@@ -86,6 +86,12 @@ app.post('/', (req, res, next) => {
   const dateFormat = 'MMM D, YYYY [at] hh:mmA';
   const start = moment.tz(req.body.start, dateFormat, `${process.env.TIME_ZONE}`);
   const end = moment.tz(req.body.end, dateFormat, `${process.env.TIME_ZONE}`);
+  if (start.weekday() === 0 || start.weekday() === 6) {
+    console.log(`Event '${status}' starts at ${start}, which is a weekend in ${process.env.TIME_ZONE}, ignoring...`)
+    res.status(200)
+    res.send('No weekend Slack!')
+    return
+  }
   if (end.hour() < 9) {
     console.log(`Event '${status}' ends at ${end}, which is before 09:00 ${process.env.TIME_ZONE}, ignoring...`)
     res.status(200)
